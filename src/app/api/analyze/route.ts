@@ -24,6 +24,11 @@ export async function POST(request: Request) {
     const visionBaseURL = process.env.OPENAI_BASE_URL;
     const visionModel = process.env.OPENAI_MODEL || "gpt-4o";
     
+    if (!visionApiKey) {
+      console.error('Missing OPENAI_API_KEY');
+      return NextResponse.json({ error: 'Server configuration error: Missing API Key' }, { status: 500 });
+    }
+
     const visionClient = new OpenAI({ 
       apiKey: visionApiKey,
       baseURL: visionBaseURL || undefined
@@ -74,17 +79,19 @@ export async function POST(request: Request) {
         model: visionModel,
         messages: visionMessages,
         max_tokens: 1024,
-        response_format: { type: "json_object" } 
       });
 
-      const visionContent = visionResponse.choices[0].message.content;
+      let visionContent = visionResponse.choices[0].message.content;
       if (!visionContent) throw new Error('Failed to analyze image');
       
+      // Clean up potential markdown code blocks
+      visionContent = visionContent.replace(/```json\n?/g, '').replace(/```/g, '').trim();
+
       try {
         const parsed = JSON.parse(visionContent);
         finalIngredients = parsed.ingredients || [];
       } catch (e) {
-        console.error("Failed to parse vision response", e);
+        console.error("Failed to parse vision response", e, visionContent);
         // Fallback or error
         throw new Error('Failed to parse ingredients from image');
       }
@@ -121,7 +128,6 @@ export async function POST(request: Request) {
       model: recipeModel,
       messages: recipeMessages,
       max_tokens: 4096,
-      response_format: { type: "json_object" }
     });
 
     let recipeContent = recipeResponse.choices[0].message.content;
