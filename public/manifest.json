@@ -1,0 +1,21 @@
+{
+  "name": "智能冰箱食谱推荐",
+  "short_name": "食谱推荐",
+  "description": "基于 AI 的智能冰箱食谱推荐助手",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffedd5",
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/globe.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
