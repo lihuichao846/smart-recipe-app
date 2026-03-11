@@ -21,11 +21,11 @@
 
    如果需要使用真实的 AI 功能，请配置 OpenAI API Key。如果未配置，将使用演示模式（返回模拟数据）。
 
-   复制 `.env.local.example` 为 `.env.local` 并填入您的 API Key：
+   复制 `.env.example` 为 `.env.local` 并填入您的 API Key：
 
    ```bash
-   cp .env.local.example .env.local
-   # 编辑 .env.local 填入 OPENAI_API_KEY=sk-...
+   cp .env.example .env.local
+   # 编辑 .env.local 填入 OPENAI_API_KEY=sk-... 和 DEEPSEEK_API_KEY=sk-...
    ```
 
 3. **运行开发服务器**
