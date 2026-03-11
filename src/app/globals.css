@@ -1,26 +1,148 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Warm & Cute Palette - Morandi & Macaron Tones */
+  --background: #fffbf0; /* Warm milk white */
+  --foreground: #5d5c58; /* Warm gray text */
+  
+  /* Primary Action Colors */
+  --primary: #ff9f87; /* Salmon Pink */
+  --primary-hover: #ff8a6d;
+  --primary-text: #ffffff;
+  
+  /* Secondary/Accent Colors */
+  --secondary: #a8d5ba; /* Matcha Green */
+  --secondary-hover: #8fc7a4;
+  
+  --accent: #ffd166; /* Macaron Yellow */
+  --accent-text: #7a6020;
+
+  /* Functional Colors (Softened) */
+  --info-bg: #e0f2fe;
+  --info-text: #0ea5e9;
+  --success-bg: #dcfce7;
+  --success-text: #16a34a;
+  --warning-bg: #fef9c3;
+  --warning-text: #ca8a04;
+  --error-bg: #fee2e2;
+  --error-text: #dc2626;
+
+  /* Card & Layout */
+  --card-bg: #ffffff;
+  --card-border: #f3f0e6;
+  --shadow-soft: 0 4px 20px rgba(255, 159, 135, 0.15);
+  --shadow-hover: 0 8px 25px rgba(255, 159, 135, 0.25);
+  
+  --radius-xl: 24px;
+  --radius-lg: 16px;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
+  
+  --font-sans: "Nunito", "Quicksand", "Segoe UI", sans-serif; /* Rounder fonts */
+  
+  --radius-xl: var(--radius-xl);
+  --radius-lg: var(--radius-lg);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #2b2a28;
+    --foreground: #f0eee6;
+    --card-bg: #383633;
+    --card-border: #4a4844;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  background-image: radial-gradient(#e6e2d6 2px, transparent 2px);
+  background-size: 32px 32px;
+}
+
+/* Cute Button Styles */
+.btn-cute {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px; /* Pill shape */
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 0 rgba(0,0,0,0.1); /* 3D bottom shadow */
+  transform: translateY(0);
+}
+
+.btn-cute:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-text);
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  filter: brightness(1.05);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: #2d5a40;
+}
+.btn-secondary:hover {
+  background-color: var(--secondary-hover);
+  filter: brightness(1.05);
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* Glass Card with Cute Border */
+.cute-card {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.3s ease;
+}
+
+.cute-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary);
+}
+
+/* Animations */
+.animate-bounce-slight {
+  animation: bounceSlight 2s infinite;
+}
+
+@keyframes bounceSlight {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
