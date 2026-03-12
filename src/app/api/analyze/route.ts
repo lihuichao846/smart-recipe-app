@@ -10,6 +10,8 @@ interface RecipeResult {
   recipes: any[];
 }
 
+import { retrieveRecipes } from '@/lib/recipe-retriever';
+
 export async function POST(request: Request) {
   try {
     const { image, ingredients: inputIngredients, preferences } = await request.json();
@@ -98,6 +100,13 @@ export async function POST(request: Request) {
     }
 
     // 3. Recipe Generation Step (using DeepSeek or Fallback)
+    
+    // RAG Retrieval
+    const retrievedRecipes = retrieveRecipes(finalIngredients, 5);
+    const ragContext = retrievedRecipes.length > 0 
+      ? `\n\n参考菜谱库中的相关菜谱（仅供参考，请根据实际食材调整）：\n${retrievedRecipes.map(r => `- ${r.name} (食材: ${r.ingredients.join(', ')})`).join('\n')}`
+      : '';
+
     const recipeMessages: any[] = [
       {
         role: "system",
@@ -120,7 +129,7 @@ export async function POST(request: Request) {
       },
       {
         role: "user",
-        content: `我的冰箱里有以下食材：${finalIngredients.join(', ')}。请推荐一些菜谱。${preferences ? `用户的额外要求：${preferences}` : ''}`
+        content: `我的冰箱里有以下食材：${finalIngredients.join(', ')}。请推荐一些菜谱。${preferences ? `用户的额外要求：${preferences}` : ''}${ragContext}`
       }
     ];
 
