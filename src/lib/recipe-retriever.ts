@@ -1,6 +1,5 @@
 
-import fs from 'fs';
-import path from 'path';
+import recipesData from '@/data/recipes.json';
 
 // 定义菜谱结构
 export interface Recipe {
@@ -9,18 +8,19 @@ export interface Recipe {
   tags: string[];
 }
 
-// 缓存菜谱数据，避免每次请求都重新读取文件
-let cachedRecipes: Recipe[] | null = null;
-
 // 加载菜谱数据
 const loadRecipes = (): Recipe[] => {
-  if (cachedRecipes) return cachedRecipes;
-  
   try {
-    const filePath = path.join(process.cwd(), 'src/data/recipes.json');
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    cachedRecipes = JSON.parse(fileContent);
-    return cachedRecipes || [];
+    // Check if recipesData is an array or has a property like 'recipes'
+    if (Array.isArray(recipesData)) {
+        return recipesData as unknown as Recipe[];
+    }
+    // Handle potential nested structure if json is { "recipes": [...] }
+    const data = recipesData as any;
+    if (data.recipes && Array.isArray(data.recipes)) {
+        return data.recipes;
+    }
+    return [];
   } catch (error) {
     console.error('Failed to load recipe knowledge base:', error);
     return [];

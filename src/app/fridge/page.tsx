@@ -10,6 +10,7 @@ import { ArrowLeft, Plus, Trash2, Refrigerator, Camera, List, Minus, Snowflake }
 import Link from 'next/link';
 import { estimateExpiryDate } from '@/lib/utils';
 import FloatingFood from '@/components/FloatingFood';
+import { identifyIngredients } from '@/lib/client-ai';
 
 export default function FridgeManager() {
   const [showCamera, setShowCamera] = useState(false);
@@ -106,17 +107,12 @@ export default function FridgeManager() {
   const handleCapture = async (imageData: string) => {
     setIsProcessing(true);
     try {
-      const response = await fetch('/api/identify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageData }),
-      });
-
-      const data = await response.json();
+      // Use client-side AI instead of API route for APK compatibility
+      const items = await identifyIngredients(imageData);
       
-      if (data.items && Array.isArray(data.items)) {
+      if (items && Array.isArray(items)) {
         // Bulk add identified items
-        const newItems = data.items.map((item: any) => ({
+        const newItems = items.map((item: any) => ({
           name: item.name,
           quantity: item.quantity || '1',
           category: item.category || '其他',
@@ -130,7 +126,7 @@ export default function FridgeManager() {
       setShowCamera(false);
     } catch (error) {
       console.error('Identification failed:', error);
-      alert('识别失败，请重试或手动添加');
+      alert('识别失败，请重试或手动添加 (请确保 NEXT_PUBLIC_OPENAI_API_KEY 已配置)');
     } finally {
       setIsProcessing(false);
     }

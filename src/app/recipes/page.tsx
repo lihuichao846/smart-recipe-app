@@ -8,6 +8,7 @@ import CameraCapture from '@/components/CameraCapture';
 import RecipeCard, { Recipe } from '@/components/RecipeCard';
 import { ChefHat, RefreshCw, Sparkles, Utensils, ArrowLeft, Refrigerator } from 'lucide-react';
 import FloatingFood from '@/components/FloatingFood';
+import { identifyIngredients, generateRecipes } from '@/lib/client-ai';
 
 export default function Home() {
   const [imageData, setImageData] = useState<string | null>(null);
@@ -32,24 +33,22 @@ export default function Home() {
     setCurrentModel('');
 
     try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image: imageData, preferences }),
-      });
+      // 1. Identify ingredients from image (Client-side)
+      const identifiedItems = await identifyIngredients(imageData);
+      const ingredientNames = identifiedItems.map(item => item.name);
+      
+      setIngredients(ingredientNames);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to analyze image');
+      if (ingredientNames.length === 0) {
+        throw new Error('未能识别到任何食材，请尝试重新拍摄。');
       }
 
-      setIngredients(data.ingredients);
-      setRecipes(data.recipes);
-      if (data.model) {
-        setCurrentModel(data.model);
+      // 2. Generate recipes based on ingredients (Client-side)
+      const { recipes: generatedRecipes, model } = await generateRecipes(ingredientNames, preferences);
+
+      setRecipes(generatedRecipes);
+      if (model) {
+        setCurrentModel(model);
       }
     } catch (err) {
       console.error(err);
@@ -78,24 +77,12 @@ export default function Home() {
       // Optimistically set ingredients for display
       setIngredients(ingredientNames);
 
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ingredients: ingredientNames, preferences }),
-      });
+      // Generate recipes based on ingredients (Client-side)
+      const { recipes: generatedRecipes, model } = await generateRecipes(ingredientNames, preferences);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate recipes');
-      }
-
-      if (data.ingredients && data.ingredients.length > 0) {
-          setIngredients(data.ingredients);
-      }
-      setRecipes(data.recipes);
-      if (data.model) {
-        setCurrentModel(data.model);
+      setRecipes(generatedRecipes);
+      if (model) {
+        setCurrentModel(model);
       }
     } catch (err) {
       console.error(err);
