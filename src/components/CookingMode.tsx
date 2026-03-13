@@ -19,12 +19,13 @@ export default function CookingMode({ recipe, onClose }: CookingModeProps) {
 
   // Extract time from step instructions
   const extractTime = (instruction: string): number | null => {
-    const hourMatch = instruction.match(/(\d+)\s*(hour|hr|小时)/i);
-    if (hourMatch) return parseInt(hourMatch[1]) * 3600;
+    // Check for decimals like 1.5 hours
+    const decimalHourMatch = instruction.match(/(\d+(\.\d+)?)\s*(hour|hr|小时)/i);
+    if (decimalHourMatch) return Math.floor(parseFloat(decimalHourMatch[1]) * 3600);
     
-    const minMatch = instruction.match(/(\d+)\s*(minute|min|分钟)/i);
-    if (minMatch) return parseInt(minMatch[1]) * 60;
-    
+    const decimalMinMatch = instruction.match(/(\d+(\.\d+)?)\s*(minute|min|分钟)/i);
+    if (decimalMinMatch) return Math.floor(parseFloat(decimalMinMatch[1]) * 60);
+
     const secMatch = instruction.match(/(\d+)\s*(second|sec|秒)/i);
     if (secMatch) return parseInt(secMatch[1]);
     
@@ -241,34 +242,34 @@ export default function CookingMode({ recipe, onClose }: CookingModeProps) {
               </div>
 
               {/* Central Animation - Visible when timer running */}
-               <div className={`transition-all duration-700 ease-in-out flex flex-col items-center justify-end ${isTimerRunning ? 'opacity-100 h-80 mb-12 scale-110' : 'opacity-0 h-0 overflow-hidden scale-75'}`}>
+               <div className={`transition-all duration-700 ease-in-out flex flex-col items-center justify-end ${isTimerRunning ? 'opacity-100 h-64 mb-8 scale-100' : 'opacity-0 h-0 overflow-hidden scale-75'}`}>
                   <div className="relative flex flex-col items-center justify-end h-full w-full">
                      {/* Steam */}
-                     <div className="absolute -top-20 flex gap-6 opacity-90 z-20">
-                       <Cloud size={32} className="text-gray-100 fill-white animate-steam" style={{ animationDelay: '0s' }} />
-                       <Cloud size={40} className="text-gray-100 fill-white animate-steam -mt-8" style={{ animationDelay: '0.5s' }} />
-                       <Cloud size={32} className="text-gray-100 fill-white animate-steam" style={{ animationDelay: '1s' }} />
+                     <div className="absolute -top-16 flex gap-4 opacity-90 z-20">
+                       <Cloud size={24} className="text-gray-100 fill-white animate-steam" style={{ animationDelay: '0s' }} />
+                       <Cloud size={32} className="text-gray-100 fill-white animate-steam -mt-6" style={{ animationDelay: '0.5s' }} />
+                       <Cloud size={24} className="text-gray-100 fill-white animate-steam" style={{ animationDelay: '1s' }} />
                      </div>
                      
                      {/* Pot */}
                      <div className="relative z-10 animate-bounce-slow">
-                        <Soup size={180} className="text-orange-500 fill-orange-100 drop-shadow-xl" strokeWidth={1.5} />
+                        <Soup size={100} className="text-orange-500 fill-orange-100 drop-shadow-lg" strokeWidth={1.5} />
                         {/* Bubbles */}
-                        <div className="absolute top-1/3 left-1/4 w-3 h-3 bg-orange-200 rounded-full animate-ping" style={{ animationDuration: '2s' }}></div>
-                        <div className="absolute top-1/4 right-1/3 w-2 h-2 bg-orange-300 rounded-full animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }}></div>
+                        <div className="absolute top-1/3 left-1/4 w-2 h-2 bg-orange-200 rounded-full animate-ping" style={{ animationDuration: '2s' }}></div>
+                        <div className="absolute top-1/4 right-1/3 w-1.5 h-1.5 bg-orange-300 rounded-full animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }}></div>
                      </div>
                      
                      {/* Flames */}
-                     <div className="flex gap-2 -mt-4 relative z-0 items-end justify-center w-full">
-                        <Flame size={48} className="text-orange-500 fill-orange-500 animate-flicker" style={{ animationDelay: '0s' }} />
-                        <Flame size={64} className="text-red-500 fill-red-500 animate-flicker" style={{ animationDelay: '0.1s' }} />
-                        <Flame size={72} className="text-yellow-500 fill-yellow-500 animate-flicker -mt-2" style={{ animationDelay: '0.2s' }} />
-                        <Flame size={64} className="text-red-500 fill-red-500 animate-flicker" style={{ animationDelay: '0.15s' }} />
-                        <Flame size={48} className="text-orange-500 fill-orange-500 animate-flicker" style={{ animationDelay: '0.05s' }} />
+                     <div className="flex gap-1.5 -mt-3 relative z-0 items-end justify-center w-full">
+                        <Flame size={28} className="text-orange-500 fill-orange-500 animate-flicker" style={{ animationDelay: '0s' }} />
+                        <Flame size={36} className="text-red-500 fill-red-500 animate-flicker" style={{ animationDelay: '0.1s' }} />
+                        <Flame size={42} className="text-yellow-500 fill-yellow-500 animate-flicker -mt-1" style={{ animationDelay: '0.2s' }} />
+                        <Flame size={36} className="text-red-500 fill-red-500 animate-flicker" style={{ animationDelay: '0.15s' }} />
+                        <Flame size={28} className="text-orange-500 fill-orange-500 animate-flicker" style={{ animationDelay: '0.05s' }} />
                      </div>
                      
                      {/* Stove base reflection */}
-                     <div className="w-48 h-4 bg-black/10 rounded-[100%] blur-md mt-2"></div>
+                     <div className="w-32 h-3 bg-black/10 rounded-[100%] blur-sm mt-2"></div>
                   </div>
                </div>
 

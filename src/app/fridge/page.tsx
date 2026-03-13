@@ -15,6 +15,7 @@ export default function FridgeManager() {
   const [showCamera, setShowCamera] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [manualMode, setManualMode] = useState(false);
+  const [activeTab, setActiveTab] = useState<'fridge' | 'freezer'>('fridge'); // 'fridge' or 'freezer'
   
   const [newItem, setNewItem] = useState<Partial<Ingredient>>({
     name: '',
@@ -135,6 +136,33 @@ export default function FridgeManager() {
     }
   };
 
+  // Handle storage toggle
+  const handleToggleStorage = async (item: Ingredient) => {
+    if (!item.id) return;
+    const newStorage = item.storage === 'freezer' ? 'fridge' : 'freezer';
+    
+    // Logic: 
+    // 1. If moving to freezer, KEEP the expiry date (do not clear it), so it can be restored if moved back.
+    // 2. If moving to fridge, only estimate if there is NO expiry date.
+    
+    const updates: Partial<Ingredient> = {
+      storage: newStorage
+    };
+
+    // Only set expiry date if it's missing and we are moving to fridge
+    if (newStorage === 'fridge' && !item.expiryDate) {
+        updates.expiryDate = estimateExpiryDate(item.name);
+    }
+    
+    await db.ingredients.update(item.id, updates);
+  };
+
+  // Filter ingredients based on active tab
+  const filteredIngredients = ingredients?.filter(item => {
+    if (activeTab === 'freezer') return item.storage === 'freezer';
+    return item.storage !== 'freezer'; // Default to fridge if undefined
+  });
+
   return (
     <main className="min-h-screen bg-gray-50 py-8 px-4 pb-24 relative overflow-hidden">
       <FloatingFood />
@@ -151,16 +179,43 @@ export default function FridgeManager() {
           <div className="w-10"></div> {/* Spacer */}
         </header>
 
-        {/* Stats */}
+        {/* Tab Switcher */}
+        <div className="flex bg-white p-1.5 rounded-2xl shadow-sm mb-8 border border-gray-100 relative">
+          <button 
+            onClick={() => setActiveTab('fridge')}
+            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 relative z-10 ${
+              activeTab === 'fridge' 
+                ? 'bg-[var(--primary)] text-white shadow-lg shadow-orange-200' 
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <Refrigerator size={18} /> 冷藏区 ({ingredients?.filter(i => i.storage !== 'freezer').length || 0})
+          </button>
+          <button 
+            onClick={() => setActiveTab('freezer')}
+            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 relative z-10 ${
+              activeTab === 'freezer' 
+                ? 'bg-blue-500 text-white shadow-lg shadow-blue-200' 
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <Snowflake size={18} /> 冷冻区 ({ingredients?.filter(i => i.storage === 'freezer').length || 0})
+          </button>
+        </div>
+
+        {/* Stats - Dynamic based on tab */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="cute-card p-6 bg-gradient-to-br from-[var(--info-bg)] to-white border-[var(--info-bg)]">
-            <p className="text-sm text-[var(--info-text)] font-bold mb-1">库存总数</p>
-            <p className="text-4xl font-black text-[var(--info-text)]">{ingredients?.length || 0}</p>
+            <p className="text-sm text-[var(--info-text)] font-bold mb-1">{activeTab === 'fridge' ? '冷藏总数' : '冷冻总数'}</p>
+            <p className="text-4xl font-black text-[var(--info-text)]">{filteredIngredients?.length || 0}</p>
           </div>
           <div className="cute-card p-6 bg-gradient-to-br from-[var(--warning-bg)] to-white border-[var(--warning-bg)]">
-            <p className="text-sm text-[var(--warning-text)] font-bold mb-1">即将过期</p>
+            <p className="text-sm text-[var(--warning-text)] font-bold mb-1">{activeTab === 'fridge' ? '即将过期' : '久置提醒'}</p>
             <p className="text-4xl font-black text-[var(--warning-text)]">
-              {ingredients?.filter(i => i.expiryDate && i.expiryDate < addDays(new Date(), 2)).length || 0}
+              {activeTab === 'fridge' 
+                ? (filteredIngredients?.filter(i => i.expiryDate && i.expiryDate < addDays(new Date(), 2)).length || 0)
+                : (filteredIngredients?.filter(i => i.addDate < addDays(new Date(), -30)).length || 0) // Example: frozen for > 30 days
+              }
             </p>
           </div>
         </div>
@@ -288,13 +343,13 @@ export default function FridgeManager() {
             当前库存
           </h3>
           
-          {ingredients?.length === 0 ? (
+          {filteredIngredients?.length === 0 ? (
             <div className="text-center py-16 text-gray-400 cute-card border-dashed bg-[var(--background)]">
-              <Refrigerator size={48} className="mx-auto mb-4 opacity-20" />
-              <p className="font-medium">冰箱空空如也，快去添加点食材吧</p>
+              {activeTab === 'fridge' ? <Refrigerator size={48} className="mx-auto mb-4 opacity-20" /> : <Snowflake size={48} className="mx-auto mb-4 opacity-20" />}
+              <p className="font-medium">{activeTab === 'fridge' ? '冷藏区空空如也' : '冷冻区没有食材'}</p>
             </div>
           ) : (
-            ingredients?.map(item => {
+            filteredIngredients?.map(item => {
               const daysUntilExpiry = item.expiryDate 
                 ? Math.ceil((item.expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24))
                 : 999;
@@ -319,7 +374,6 @@ export default function FridgeManager() {
                     <div>
                       <h4 className="font-bold text-gray-800 text-lg flex items-center gap-2 group-hover:text-[var(--primary)] transition-colors">
                         {item.name}
-                        {isFrozen && <span className="text-xs bg-blue-100 text-blue-500 px-2 py-0.5 rounded-full">冷冻</span>}
                       </h4>
                       
                       {/* Quantity Controls */}
@@ -342,8 +396,8 @@ export default function FridgeManager() {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
+                  <div className="flex items-center gap-3">
+                    <div className="text-right mr-2">
                       <p className={`text-sm font-bold transition-colors duration-300 ${isWarningState ? 'text-red-500 animate-pulse' : isFrozen ? 'text-blue-500' : 'text-green-600'}`}>
                         {isFrozen ? '已冷冻' : isExpired ? '已过期' : isExpiring ? '临近过期' : `${daysUntilExpiry}天后过期`}
                       </p>
@@ -351,6 +405,23 @@ export default function FridgeManager() {
                         {isFrozen ? `放入: ${format(item.addDate, 'MM-dd', { locale: zhCN })}` : item.expiryDate ? format(item.expiryDate, 'MM-dd', { locale: zhCN }) : ''}
                       </p>
                     </div>
+                    
+                    {/* Storage Toggle Button - Independent & Visible */}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleStorage(item);
+                      }}
+                      className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all hover:scale-110 active:scale-95 shadow-sm ${
+                        isFrozen 
+                          ? 'bg-orange-50 text-orange-500 hover:bg-orange-100 hover:shadow-orange-100' 
+                          : 'bg-blue-50 text-blue-500 hover:bg-blue-100 hover:shadow-blue-100'
+                      }`}
+                      title={isFrozen ? "移动到冷藏" : "移动到冷冻"}
+                    >
+                      {isFrozen ? <Refrigerator size={20} /> : <Snowflake size={20} />}
+                    </button>
+
                     <button 
                       onClick={() => item.id && handleDelete(item.id)}
                       className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all hover:scale-110 active:scale-95"
