@@ -12,16 +12,28 @@ export interface Ingredient {
   storage?: 'fridge' | 'freezer'; // 'fridge' (default) or 'freezer'
 }
 
+export interface CalorieLog {
+  id: number;
+  date: Date;
+  recipeName: string;
+  calories: number;
+  mealType?: string; // e.g., 'breakfast', 'lunch', 'dinner'
+}
+
 const db = new Dexie('FridgeDatabase') as Dexie & {
   ingredients: EntityTable<
     Ingredient,
-    'id' // primary key "id" (for the typings only)
+    'id'
+  >;
+  calorieLogs: EntityTable<
+    CalorieLog,
+    'id'
   >;
 };
 
 // Schema declaration:
 db.version(1).stores({
-  ingredients: '++id, name, addDate, expiryDate, category' // primary key "id" (for the runtime!)
+  ingredients: '++id, name, addDate, expiryDate, category'
 });
 
 // Version 2: Add storage field
@@ -31,6 +43,12 @@ db.version(2).stores({
   return tx.table('ingredients').toCollection().modify(item => {
     item.storage = 'fridge';
   });
+});
+
+// Version 3: Add calorieLogs table
+db.version(3).stores({
+  ingredients: '++id, name, addDate, expiryDate, category, storage',
+  calorieLogs: '++id, date, recipeName'
 });
 
 export { db };

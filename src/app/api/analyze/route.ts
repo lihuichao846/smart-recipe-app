@@ -12,6 +12,17 @@ interface RecipeResult {
 
 import { retrieveRecipes } from '@/lib/recipe-retriever';
 
+// Helper function to clean and extract JSON from model response
+const cleanJson = (text: string) => {
+  let cleaned = text.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  if (start !== -1 && end !== -1 && end > start) {
+    cleaned = cleaned.substring(start, end + 1);
+  }
+  return cleaned;
+};
+
 export async function POST(request: Request) {
   try {
     const { image, ingredients: inputIngredients, preferences } = await request.json();
@@ -87,7 +98,7 @@ export async function POST(request: Request) {
       if (!visionContent) throw new Error('Failed to analyze image');
       
       // Clean up potential markdown code blocks
-      visionContent = visionContent.replace(/```json\n?/g, '').replace(/```/g, '').trim();
+      visionContent = cleanJson(visionContent);
 
       try {
         const parsed = JSON.parse(visionContent);
@@ -143,9 +154,16 @@ export async function POST(request: Request) {
     if (!recipeContent) throw new Error('Failed to generate recipes');
 
     // Clean up potential markdown code blocks if the model adds them (DeepSeek sometimes does despite instructions)
-    recipeContent = recipeContent.replace(/```json\n?/g, '').replace(/```/g, '').trim();
+    recipeContent = cleanJson(recipeContent);
     
-    const recipeResult = JSON.parse(recipeContent);
+    let recipeResult;
+    try {
+      recipeResult = JSON.parse(recipeContent);
+    } catch (e) {
+      console.error("Failed to parse recipe response:", e);
+      console.error("Raw content:", recipeContent);
+      throw new Error("Failed to parse recipe JSON");
+    }
     
     // Construct final response
     return NextResponse.json({

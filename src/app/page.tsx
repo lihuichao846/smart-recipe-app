@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import { ChefHat, Refrigerator, ArrowRight, Utensils } from 'lucide-react';
 import FloatingFood from '@/components/FloatingFood';
+import DailyCalories from '@/components/DailyCalories';
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-[var(--background)] relative overflow-hidden flex flex-col items-center justify-center p-6">
       {/* Background Decor */}
       <FloatingFood />
+      <DailyCalories />
 
       <div className="text-center mb-16 animate-fade-in relative z-10">
         <div className="inline-flex items-center justify-center p-4 bg-white rounded-3xl shadow-sm mb-6 border border-orange-50 rotate-3">
