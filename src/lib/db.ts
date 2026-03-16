@@ -17,7 +17,10 @@ export interface CalorieLog {
   date: Date;
   recipeName: string;
   calories: number;
-  mealType?: string; // e.g., 'breakfast', 'lunch', 'dinner'
+  protein?: number; // g
+  carbs?: number; // g
+  fat?: number; // g
+  mealType?: string; // e.g., 'breakfast', 'lunch', 'dinner', 'snack'
 }
 
 const db = new Dexie('FridgeDatabase') as Dexie & {
@@ -49,6 +52,11 @@ db.version(2).stores({
 db.version(3).stores({
   ingredients: '++id, name, addDate, expiryDate, category, storage',
   calorieLogs: '++id, date, recipeName'
+});
+
+// Version 4: Add macros to calorieLogs
+db.version(4).stores({
+  calorieLogs: '++id, date, recipeName, mealType' // update index if needed, but usually just adding fields doesn't require schema change if not indexed
 });
 
 export { db };

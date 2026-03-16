@@ -5,13 +5,24 @@ import { retrieveRecipes } from './recipe-retriever';
 // WARNING: This exposes your API key to the client. Only use for local/personal apps.
 const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 const baseURL = process.env.NEXT_PUBLIC_OPENAI_BASE_URL;
-const model = process.env.NEXT_PUBLIC_OPENAI_MODEL || "gpt-4o";
+const visionModel = process.env.NEXT_PUBLIC_OPENAI_MODEL || "gpt-4o";
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: apiKey || 'dummy-key', // Prevent crash if key is missing, but calls will fail
+// DeepSeek Configuration (Fallback to OpenAI config if not present)
+const deepseekApiKey = process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || apiKey;
+const deepseekBaseURL = process.env.NEXT_PUBLIC_DEEPSEEK_BASE_URL || baseURL;
+const recipeModel = process.env.NEXT_PUBLIC_DEEPSEEK_MODEL || visionModel;
+
+// Initialize OpenAI clients
+const visionClient = new OpenAI({
+  apiKey: apiKey || 'dummy-key',
   baseURL: baseURL || undefined,
   dangerouslyAllowBrowser: true 
+});
+
+const recipeClient = new OpenAI({
+    apiKey: deepseekApiKey || 'dummy-key',
+    baseURL: deepseekBaseURL || undefined,
+    dangerouslyAllowBrowser: true
 });
 
 export interface IdentifiedItem {
@@ -26,8 +37,8 @@ export async function identifyIngredients(imageData: string): Promise<Identified
   }
 
   try {
-    const response = await openai.chat.completions.create({
-      model: model,
+    const response = await visionClient.chat.completions.create({
+      model: visionModel,
       messages: [
         {
           role: "system",
@@ -87,8 +98,8 @@ export interface GeneratedRecipe {
 }
 
 export async function generateRecipes(ingredients: string[], preferences?: string): Promise<{ recipes: GeneratedRecipe[], model: string }> {
-  if (!apiKey) {
-    throw new Error('Missing NEXT_PUBLIC_OPENAI_API_KEY');
+  if (!deepseekApiKey) {
+    throw new Error('Missing NEXT_PUBLIC_DEEPSEEK_API_KEY or NEXT_PUBLIC_OPENAI_API_KEY');
   }
 
   // RAG Retrieval (Client-side now!)
@@ -98,8 +109,8 @@ export async function generateRecipes(ingredients: string[], preferences?: strin
     : '';
 
   try {
-    const response = await openai.chat.completions.create({
-      model: model,
+    const response = await recipeClient.chat.completions.create({
+      model: recipeModel,
       messages: [
         {
           role: "system",
@@ -145,7 +156,7 @@ export async function generateRecipes(ingredients: string[], preferences?: strin
     const result = JSON.parse(content);
     return {
       recipes: result.recipes || [],
-      model: model
+      model: recipeModel
     };
   } catch (error) {
     console.error('Client AI Recipe Generation Error:', error);

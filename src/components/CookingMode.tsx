@@ -91,12 +91,47 @@ export default function CookingMode({ recipe, onClose }: CookingModeProps) {
   const handleFinish = async () => {
     try {
       const calories = parseInt(recipe.calories.replace(/\D/g, '')) || 0;
+      let finalCalories = calories;
+      let protein = 0;
+      let carbs = 0;
+      let fat = 0;
+      let isAiEstimated = false;
+
+      // 1. Try to get AI analysis if detailed macros are missing (or just to be sure)
+      // Since recipe only has calories string usually, we call AI to get full stats
+      try {
+        const response = await fetch('/api/analyze-food', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ foodName: recipe.name }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Use AI data if available, fallback to existing calories if AI fails/returns 0
+          finalCalories = data.calories || finalCalories; 
+          protein = data.protein || 0;
+          carbs = data.carbs || 0;
+          fat = data.fat || 0;
+          isAiEstimated = true;
+        }
+      } catch (e) {
+        console.error('AI analysis failed in cooking mode, using basic calories', e);
+      }
+
+      // 2. Save to DB
       await db.calorieLogs.add({
         date: new Date(),
         recipeName: recipe.name,
-        calories: calories,
+        calories: finalCalories,
+        protein: protein,
+        carbs: carbs,
+        fat: fat,
         mealType: getMealType()
       });
+      
+      // Update state for display
+      setCompletedStats({ calories: finalCalories, protein, carbs, fat });
       setShowCompletion(true);
     } catch (error) {
       console.error('Failed to save calorie log:', error);
@@ -106,10 +141,14 @@ export default function CookingMode({ recipe, onClose }: CookingModeProps) {
 
   const getMealType = () => {
     const hour = new Date().getHours();
-    if (hour < 10) return 'breakfast';
-    if (hour < 15) return 'lunch';
-    return 'dinner';
+    if (hour >= 5 && hour < 11) return 'breakfast';
+    if (hour >= 11 && hour < 15) return 'lunch';
+    if (hour >= 15 && hour < 18) return 'snack';
+    if (hour >= 18 && hour < 22) return 'dinner';
+    return 'snack';
   };
+
+  const [completedStats, setCompletedStats] = useState({ calories: 0, protein: 0, carbs: 0, fat: 0 });
 
   if (showCompletion) {
     return (
@@ -146,10 +185,28 @@ export default function CookingMode({ recipe, onClose }: CookingModeProps) {
               <span className="text-gray-600 font-bold">摄入热量</span>
               <span className="text-orange-500 font-black flex items-center gap-1 text-xl">
                 <Flame size={24} className="fill-orange-500 animate-pulse" />
-                +{recipe.calories}
+                +{completedStats.calories}
               </span>
             </div>
-            <p className="text-xs text-orange-300 font-medium">已自动记录到健康档案</p>
+            
+            {(completedStats.protein > 0 || completedStats.carbs > 0 || completedStats.fat > 0) && (
+              <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-orange-100/50">
+                <div className="text-center">
+                  <div className="text-[10px] text-gray-400">蛋白质</div>
+                  <div className="text-sm font-bold text-orange-700">{completedStats.protein}g</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-[10px] text-gray-400">碳水</div>
+                  <div className="text-sm font-bold text-orange-700">{completedStats.carbs}g</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-[10px] text-gray-400">脂肪</div>
+                  <div className="text-sm font-bold text-orange-700">{completedStats.fat}g</div>
+                </div>
+              </div>
+            )}
+            
+            <p className="text-xs text-orange-300 font-medium mt-3">已自动分析营养并记录到健康档案</p>
           </div>
 
           <button 

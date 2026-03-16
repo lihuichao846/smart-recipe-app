@@ -62,6 +62,10 @@
   }
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -179,4 +183,13 @@ body {
 /* Override bounce for smoother pot movement */
 .animate-bounce-slow {
   animation: bounceSlight 1.5s infinite ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }

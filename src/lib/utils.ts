@@ -81,3 +81,27 @@ export function estimateExpiryDate(name: string): Date {
   // 默认 (5天) - 采取相对保守的估计
   return addDays(new Date(), 5);
 }
+
+/**
+ * 根据时间判断餐段 (Meal Type)
+ * @param date - 可选，默认为当前时间
+ * @returns 'breakfast' | 'lunch' | 'dinner' | 'snack'
+ */
+export function getMealTypeByTime(date: Date = new Date()): string {
+  const hour = date.getHours();
+  
+  // 05:00 - 10:59 -> 早餐
+  if (hour >= 5 && hour < 11) return 'breakfast';
+  
+  // 11:00 - 14:59 -> 午餐
+  if (hour >= 11 && hour < 15) return 'lunch';
+  
+  // 15:00 - 17:59 -> 下午茶/加餐
+  if (hour >= 15 && hour < 18) return 'snack';
+  
+  // 18:00 - 21:59 -> 晚餐
+  if (hour >= 18 && hour < 22) return 'dinner';
+  
+  // 22:00 - 04:59 -> 夜宵/加餐
+  return 'snack';
+}
