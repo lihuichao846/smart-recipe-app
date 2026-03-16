@@ -96,12 +96,12 @@ export function getMealTypeByTime(date: Date = new Date()): string {
   // 11:00 - 14:59 -> 午餐
   if (hour >= 11 && hour < 15) return 'lunch';
   
-  // 15:00 - 17:59 -> 下午茶/加餐
-  if (hour >= 15 && hour < 18) return 'snack';
+  // 15:00 - 16:59 -> 下午茶/加餐 (缩短下午茶时间)
+  if (hour >= 15 && hour < 17) return 'snack';
   
-  // 18:00 - 21:59 -> 晚餐
-  if (hour >= 18 && hour < 22) return 'dinner';
+  // 17:00 - 23:59 -> 晚餐 (延长晚餐时间覆盖范围)
+  if (hour >= 17) return 'dinner';
   
-  // 22:00 - 04:59 -> 夜宵/加餐
+  // 00:00 - 04:59 -> 夜宵/加餐
   return 'snack';
 }

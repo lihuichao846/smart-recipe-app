@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronRight, ChevronLeft, Clock, CheckCircle, Flame, ChefHat, Utensils, Smile, Soup, Cloud, Citrus, Sparkles } from 'lucide-react';
 import { Recipe } from './RecipeCard';
 import { db } from '@/lib/db';
+import { getMealTypeByTime } from '@/lib/utils';
 
 interface CookingModeProps {
   recipe: Recipe;
@@ -120,14 +121,15 @@ export default function CookingMode({ recipe, onClose }: CookingModeProps) {
       }
 
       // 2. Save to DB
+      const now = new Date();
       await db.calorieLogs.add({
-        date: new Date(),
+        date: now,
         recipeName: recipe.name,
         calories: finalCalories,
         protein: protein,
         carbs: carbs,
         fat: fat,
-        mealType: getMealType()
+        mealType: getMealTypeByTime(now)
       });
       
       // Update state for display
@@ -137,15 +139,6 @@ export default function CookingMode({ recipe, onClose }: CookingModeProps) {
       console.error('Failed to save calorie log:', error);
       setShowCompletion(true);
     }
-  };
-
-  const getMealType = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 11) return 'breakfast';
-    if (hour >= 11 && hour < 15) return 'lunch';
-    if (hour >= 15 && hour < 18) return 'snack';
-    if (hour >= 18 && hour < 22) return 'dinner';
-    return 'snack';
   };
 
   const [completedStats, setCompletedStats] = useState({ calories: 0, protein: 0, carbs: 0, fat: 0 });

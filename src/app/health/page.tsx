@@ -54,18 +54,10 @@ export default function HealthPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisReason, setAnalysisReason] = useState('');
 
-  // Auto-detect meal type based on time
-  const getMealTypeByTime = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 11) return 'breakfast';
-    if (hour >= 11 && hour < 15) return 'lunch';
-    if (hour >= 15 && hour < 18) return 'snack'; // Afternoon snack
-    if (hour >= 18 && hour < 22) return 'dinner';
-    return 'snack'; // Late night snack
-  };
-
   const openAddForm = () => {
-    setNewEntry(prev => ({ ...prev, mealType: getMealTypeByTime() }));
+    // We don't need to pre-set mealType anymore as it will be determined on submit time
+    // But for UI state consistency we can set a default
+    setNewEntry(prev => ({ ...prev }));
     setShowAddForm(true);
     setAnalysisReason('');
   };
@@ -140,14 +132,18 @@ export default function HealthPage() {
       setIsAnalyzing(false);
     }
 
+    // Use current time to determine meal type dynamically
+    const now = new Date();
+    const dynamicMealType = getMealTypeByTime(now);
+
     await db.calorieLogs.add({
-      date: new Date(),
+      date: now,
       recipeName: newEntry.name,
       calories: finalCalories,
       protein: finalProtein,
       carbs: finalCarbs,
       fat: finalFat,
-      mealType: newEntry.mealType,
+      mealType: dynamicMealType, // Use the dynamically calculated type
     } as CalorieLog);
 
     setNewEntry({
@@ -156,7 +152,7 @@ export default function HealthPage() {
       protein: '',
       carbs: '',
       fat: '',
-      mealType: 'breakfast'
+      mealType: 'breakfast' // Reset to default
     });
     setAnalysisReason('');
     setShowAddForm(false);
@@ -337,7 +333,7 @@ export default function HealthPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-1">热量 (kcal)</label>
                   <input
@@ -347,18 +343,6 @@ export default function HealthPage() {
                     placeholder="不填则AI自动计算"
                     className="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-orange-200 placeholder:text-gray-300"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">餐段</label>
-                  <select
-                    value={newEntry.mealType}
-                    onChange={e => setNewEntry({...newEntry, mealType: e.target.value})}
-                    className="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-orange-200 appearance-none"
-                  >
-                    {mealTypes.map(type => (
-                      <option key={type.id} value={type.id}>{type.label}</option>
-                    ))}
-                  </select>
                 </div>
               </div>
 
