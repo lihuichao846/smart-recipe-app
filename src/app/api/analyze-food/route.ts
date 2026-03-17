@@ -45,7 +45,7 @@ export async function POST(request: Request) {
           content: `估算这个食物的营养：${foodName}`
         }
       ],
-      response_format: { type: "json_object" },
+      // response_format: { type: "json_object" }, // Remove to support 3rd party providers like SiliconFlow
       max_tokens: 500,
     });
 
