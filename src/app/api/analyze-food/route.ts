@@ -24,13 +24,13 @@ export async function POST(request: Request) {
        finalBaseURL = finalBaseURL.replace(/\/+$/, '') + '/v1';
     }
 
-    // Log configuration (safely)
-    console.log('API Config:', { 
-      model, 
-      originalURL: baseURL,
-      finalURL: finalBaseURL,
-      hasKey: !!apiKey 
-    });
+    // Explicit logging for Vercel
+    console.log('--- API DEBUG START ---');
+    console.log('Model:', model);
+    console.log('Original BaseURL:', baseURL);
+    console.log('Final BaseURL:', finalBaseURL);
+    console.log('Has API Key:', !!apiKey);
+    console.log('--- API DEBUG END ---');
 
     const client = new OpenAI({ 
       apiKey,
