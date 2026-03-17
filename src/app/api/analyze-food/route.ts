@@ -17,9 +17,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Server configuration error: Missing API Key' }, { status: 500 });
     }
 
+    // Fix: SiliconFlow/DeepSeek compatibility - ensure baseURL ends with /v1
+    let finalBaseURL = baseURL;
+    // Common issue: user provides 'https://api.siliconflow.cn' but SDK needs 'https://api.siliconflow.cn/v1'
+    if (finalBaseURL && !finalBaseURL.endsWith('/v1')) {
+       finalBaseURL = finalBaseURL.replace(/\/+$/, '') + '/v1';
+    }
+
+    // Log configuration (safely)
+    console.log('API Config:', { 
+      model, 
+      originalURL: baseURL,
+      finalURL: finalBaseURL,
+      hasKey: !!apiKey 
+    });
+
     const client = new OpenAI({ 
       apiKey,
-      baseURL: baseURL || undefined
+      baseURL: finalBaseURL || undefined
     });
 
     const response = await client.chat.completions.create({
