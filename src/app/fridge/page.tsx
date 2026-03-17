@@ -327,7 +327,7 @@ export default function FridgeManager() {
       opacity: 1, 
       y: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 100,
         damping: 15
       }
@@ -745,7 +745,7 @@ export default function FridgeManager() {
                             animate-bounce-slow
                          `}>
                             <span className="text-7xl drop-shadow-md flex items-center justify-center">
-                                {getIngredientIcon(selectedItem.name, selectedItem.category)}
+                                {getIngredientIcon(selectedItem.name, selectedItem.category || '')}
                             </span>
                          </div>
 
@@ -949,7 +949,7 @@ export default function FridgeManager() {
                                                 shadow-inner
                                             `}>
                                                 <span className="text-5xl filter drop-shadow-sm">
-                                                    {getIngredientIcon(item.name, item.category)}
+                                                    {getIngredientIcon(item.name, item.category || '')}
                                                 </span>
                                             </div>
                                             {/* Mood Emoji */}
