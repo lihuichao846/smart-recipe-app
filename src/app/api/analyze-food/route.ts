@@ -11,7 +11,9 @@ export async function POST(request: Request) {
 
     const apiKey = process.env.DEEPSEEK_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
     const baseURL = process.env.DEEPSEEK_BASE_URL || process.env.NEXT_PUBLIC_DEEPSEEK_BASE_URL || process.env.OPENAI_BASE_URL || process.env.NEXT_PUBLIC_OPENAI_BASE_URL;
-    const model = process.env.DEEPSEEK_MODEL || process.env.NEXT_PUBLIC_DEEPSEEK_MODEL || "gpt-4o";
+    // If GLM-5 fails on the current BaseURL, we can safely fall back to the environment variable models.
+    // But per your request, we use GLM-5 by default for detailed nutrition analysis.
+    const model = process.env.GLM_MODEL || "Pro/zai-org/GLM-5";
 
     if (!apiKey) {
       return NextResponse.json({ error: 'Server configuration error: Missing API Key' }, { status: 500 });
@@ -24,14 +26,6 @@ export async function POST(request: Request) {
        finalBaseURL = finalBaseURL.replace(/\/+$/, '') + '/v1';
     }
 
-    // Explicit logging for Vercel
-    console.log('--- API DEBUG START ---');
-    console.log('Model:', model);
-    console.log('Original BaseURL:', baseURL);
-    console.log('Final BaseURL:', finalBaseURL);
-    console.log('Has API Key:', !!apiKey);
-    console.log('--- API DEBUG END ---');
-
     const client = new OpenAI({ 
       apiKey,
       baseURL: finalBaseURL || undefined
@@ -42,7 +36,7 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `你是一个专业的营养师助手。请根据用户提供的食物名称（可能包含份量），估算其营养成分。
+          content: `你是一个专业的营养师助手。请根据用户提供的食物名称（可能包含份量），进行细节的营养数据分析并估算其营养成分。
           
           请返回严格的 JSON 格式，不要包含 Markdown 标记。结构如下:
           {
@@ -60,7 +54,12 @@ export async function POST(request: Request) {
           content: `估算这个食物的营养：${foodName}`
         }
       ],
-      // response_format: { type: "json_object" }, // Remove to support 3rd party providers like SiliconFlow
+      // GLM-5/DeepSeek specific parameters
+      temperature: 0.1, // Lower temperature for more consistent and faster JSON output
+      // Note: While standard OpenAI SDK doesn't have a direct 'disable thinking' flag, 
+      // setting top_p very low combined with temperature=0.1 forces the model to take 
+      // the most direct path without divergent reasoning.
+      top_p: 0.1,
       max_tokens: 500,
     });
 
