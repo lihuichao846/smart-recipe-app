@@ -9,9 +9,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Please provide a food name' }, { status: 400 });
     }
 
-    const apiKey = process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY;
-    const baseURL = process.env.DEEPSEEK_BASE_URL || process.env.OPENAI_BASE_URL;
-    const model = process.env.DEEPSEEK_MODEL || "gpt-4o";
+    const apiKey = process.env.DEEPSEEK_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+    const baseURL = process.env.DEEPSEEK_BASE_URL || process.env.NEXT_PUBLIC_DEEPSEEK_BASE_URL || process.env.OPENAI_BASE_URL || process.env.NEXT_PUBLIC_OPENAI_BASE_URL;
+    const model = process.env.DEEPSEEK_MODEL || process.env.NEXT_PUBLIC_DEEPSEEK_MODEL || "gpt-4o";
 
     if (!apiKey) {
       return NextResponse.json({ error: 'Server configuration error: Missing API Key' }, { status: 500 });

@@ -33,9 +33,9 @@ export async function POST(request: Request) {
 
     // 1. Initialize Clients
     // Vision Client (OpenAI or compatible)
-    const visionApiKey = process.env.OPENAI_API_KEY;
-    const visionBaseURL = process.env.OPENAI_BASE_URL;
-    const visionModel = process.env.OPENAI_MODEL || "gpt-4o";
+    const visionApiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+    const visionBaseURL = process.env.OPENAI_BASE_URL || process.env.NEXT_PUBLIC_OPENAI_BASE_URL;
+    const visionModel = process.env.OPENAI_MODEL || process.env.NEXT_PUBLIC_OPENAI_MODEL || "gpt-4o";
     
     if (!visionApiKey) {
       console.error('Missing OPENAI_API_KEY');
@@ -49,15 +49,15 @@ export async function POST(request: Request) {
 
     // DeepSeek Client (for text/recipe generation)
     // If DEEPSEEK_API_KEY is not set, fallback to visionClient
-    const deepseekApiKey = process.env.DEEPSEEK_API_KEY || visionApiKey;
-    const deepseekBaseURL = process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com"; // Default DeepSeek API URL
-    const deepseekModel = process.env.DEEPSEEK_MODEL || "deepseek-chat"; 
+    const deepseekApiKey = process.env.DEEPSEEK_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || visionApiKey;
+    const deepseekBaseURL = process.env.DEEPSEEK_BASE_URL || process.env.NEXT_PUBLIC_DEEPSEEK_BASE_URL || "https://api.deepseek.com"; // Default DeepSeek API URL
+    const deepseekModel = process.env.DEEPSEEK_MODEL || process.env.NEXT_PUBLIC_DEEPSEEK_MODEL || "deepseek-chat"; 
 
-    const recipeClient = process.env.DEEPSEEK_API_KEY 
+    const recipeClient = (process.env.DEEPSEEK_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY)
       ? new OpenAI({ apiKey: deepseekApiKey, baseURL: deepseekBaseURL })
       : visionClient;
     
-    const recipeModel = process.env.DEEPSEEK_API_KEY ? deepseekModel : visionModel;
+    const recipeModel = (process.env.DEEPSEEK_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY) ? deepseekModel : visionModel;
 
     let finalIngredients: string[] = inputIngredients || [];
     let usedVisionModel = "";
