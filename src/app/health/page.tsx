@@ -74,7 +74,10 @@ export default function HealthPage() {
         body: JSON.stringify({ foodName: newEntry.name }),
       });
 
-      if (!response.ok) throw new Error('Analysis failed');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || errorData.details || `Request failed with status ${response.status}`);
+      }
 
       const data = await response.json();
       setNewEntry(prev => ({
@@ -89,7 +92,7 @@ export default function HealthPage() {
       }
     } catch (error) {
       console.error('Failed to analyze:', error);
-      alert('AI 估算失败，请手动输入或重试');
+      alert(`AI 估算失败: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsAnalyzing(false);
     }
