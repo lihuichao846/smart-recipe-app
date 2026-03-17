@@ -9,6 +9,24 @@
 - **智能分析**: 使用 OpenAI GPT-4o (Vision) 识别食材。
 - **菜谱推荐**: 根据现有食材生成详细的菜谱，包含步骤、烹饪时间和营养估算。
 
+## 界面展示
+
+### 1. 首页 (Home)
+简洁温馨的入口，提供拍照、库存管理和健康记录三大核心功能。
+![首页](docs/images/home.png)
+
+### 2. 拍照识别与推荐 (AI Recommendation)
+上传或拍摄冰箱食材，AI 自动识别并推荐个性化健康食谱。
+![食谱推荐](docs/images/recipe-recommendation.png)
+
+### 3. 冰箱库存管理 (Inventory)
+数字化管理冰箱存货，自动记录保质期，拒绝浪费。
+![库存管理](docs/images/fridge-inventory.png)
+
+### 4. 健康饮食追踪 (Health Tracker)
+自动记录每餐热量与营养摄入，智能分析饮食健康状况。
+![健康管理](docs/images/health-diet.png)
+
 ## 快速开始
 
 1. **安装依赖**
