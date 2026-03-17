@@ -35,6 +35,13 @@
   
   --radius-xl: 24px;
   --radius-lg: 16px;
+
+  /* Icy/Fridge Theme Colors */
+  --ice-bg-start: #e8f4f8;
+  --ice-bg-end: #d6eef5;
+  --ice-border: #b8e3ef;
+  --ice-shelf: rgba(255, 255, 255, 0.6);
+  --ice-glass: rgba(255, 255, 255, 0.4);
 }
 
 @theme inline {
@@ -46,6 +53,10 @@
   --color-accent: var(--accent);
   --color-card-bg: var(--card-bg);
   --color-card-border: var(--card-border);
+  
+  --color-ice-bg-start: var(--ice-bg-start);
+  --color-ice-bg-end: var(--ice-bg-end);
+  --color-ice-border: var(--ice-border);
   
   --font-sans: "Nunito", "Quicksand", "Segoe UI", sans-serif; /* Rounder fonts */
   
@@ -168,8 +179,59 @@ body {
   50% { opacity: 0.8; transform: scale(0.95); }
 }
 
+@keyframes shiver {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-2px) rotate(-1deg); }
+  75% { transform: translateX(2px) rotate(1deg); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fall {
+  0% { transform: translateY(-20px) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(100vh) translateX(20px); opacity: 0; }
+}
+
+@keyframes rise {
+  0% { transform: translateY(100vh) translateX(0) scale(1); opacity: 0; }
+  10% { opacity: 0.8; }
+  100% { transform: translateY(-20px) translateX(20px) scale(1.2); opacity: 0; }
+}
+
+@keyframes mist-flow {
+  0% { transform: translateY(100%) scale(1); opacity: 0; }
+  20% { opacity: 0.5; }
+  100% { transform: translateY(-50%) scale(3); opacity: 0; }
+}
+
+@keyframes pot-rock {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+
+@keyframes jump {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(10deg); }
+}
+
+@keyframes stir {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-5px) rotate(-15deg); }
+  75% { transform: translateX(5px) rotate(15deg); }
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float 6s ease-in-out infinite;
 }
 
 .animate-steam {
@@ -178,6 +240,38 @@ body {
 
 .animate-flicker {
   animation: flicker 0.5s ease-in-out infinite;
+}
+
+.animate-shiver {
+  animation: shiver 0.3s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+.animate-fall {
+  animation: fall linear infinite;
+}
+
+.animate-rise {
+  animation: rise linear infinite;
+}
+
+.animate-mist {
+  animation: mist-flow 4s ease-out infinite;
+}
+
+.animate-pot-rock {
+  animation: pot-rock 2s ease-in-out infinite;
+}
+
+.animate-jump {
+  animation: jump 0.8s ease-in-out infinite;
+}
+
+.animate-stir {
+  animation: stir 3s ease-in-out infinite;
 }
 
 /* Override bounce for smoother pot movement */
@@ -192,4 +286,61 @@ body {
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(255, 159, 135, 0.2); box-shadow: 0 0 0 0 rgba(255, 159, 135, 0.1); }
+  50% { border-color: rgba(255, 159, 135, 0.6); box-shadow: 0 0 0 4px rgba(255, 159, 135, 0.1); }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateY(200%); opacity: 0; }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.05); filter: brightness(1.1); }
+}
+
+@keyframes cold-air {
+  0% { transform: translateY(10px) translateX(0); opacity: 0; }
+  20% { opacity: 0.6; }
+  100% { transform: translateY(-20px) translateX(10px); opacity: 0; }
+}
+
+@keyframes signal-ripple {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.animate-pulse-border {
+  animation: pulse-border 3s infinite ease-in-out;
+}
+
+.animate-scan-line {
+  animation: scan-line 3s linear infinite;
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.animate-cold-air {
+  animation: cold-air 4s ease-out infinite;
+}
+
+.animate-signal-ripple {
+  animation: signal-ripple 2s ease-out infinite;
+}
+
+/* Custom Scrollbar for Fridge */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
