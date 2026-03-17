@@ -12,8 +12,8 @@ export async function POST(request: Request) {
     const apiKey = process.env.DEEPSEEK_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
     const baseURL = process.env.DEEPSEEK_BASE_URL || process.env.NEXT_PUBLIC_DEEPSEEK_BASE_URL || process.env.OPENAI_BASE_URL || process.env.NEXT_PUBLIC_OPENAI_BASE_URL;
     // If GLM-5 fails on the current BaseURL, we can safely fall back to the environment variable models.
-    // But per your request, we use GLM-5 by default for detailed nutrition analysis.
-    const model = process.env.GLM_MODEL || "Pro/zai-org/GLM-5";
+    // Use Qwen2.5-7B-Instruct for ultra-fast response as requested by user
+    const model = process.env.GLM_MODEL || "Qwen/Qwen2.5-7B-Instruct";
 
     if (!apiKey) {
       return NextResponse.json({ error: 'Server configuration error: Missing API Key' }, { status: 500 });

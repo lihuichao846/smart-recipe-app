@@ -16,6 +16,7 @@ export default function CookingMode({ recipe, onClose }: CookingModeProps) {
   const [timer, setTimer] = useState<number | null>(null);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Extract time from step instructions
@@ -90,6 +91,7 @@ export default function CookingMode({ recipe, onClose }: CookingModeProps) {
   };
 
   const handleFinish = async () => {
+    setIsAnalyzing(true);
     try {
       const calories = parseInt(recipe.calories.replace(/\D/g, '')) || 0;
       let finalCalories = calories;
@@ -138,10 +140,31 @@ export default function CookingMode({ recipe, onClose }: CookingModeProps) {
     } catch (error) {
       console.error('Failed to save calorie log:', error);
       setShowCompletion(true);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
   const [completedStats, setCompletedStats] = useState({ calories: 0, protein: 0, carbs: 0, fat: 0 });
+
+  if (isAnalyzing) {
+    return (
+      <div className="fixed inset-0 z-50 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 animate-fade-in">
+        <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mb-6 animate-bounce">
+          <ChefHat size={48} className="text-orange-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">正在分析营养成分...</h2>
+        <p className="text-gray-500 text-center max-w-xs">
+          AI 大厨正在仔细计算这道菜的热量和营养，请稍候片刻~
+        </p>
+        <div className="mt-8 flex gap-2">
+          <span className="w-3 h-3 bg-orange-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+          <span className="w-3 h-3 bg-orange-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+          <span className="w-3 h-3 bg-orange-400 rounded-full animate-bounce"></span>
+        </div>
+      </div>
+    );
+  }
 
   if (showCompletion) {
     return (
