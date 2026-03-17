@@ -14,7 +14,11 @@ import {
   Coffee, 
   Sun, 
   Moon, 
-  Apple 
+  Apple,
+  Dumbbell,
+  HeartPulse,
+  Droplets,
+  Carrot
 } from 'lucide-react';
 
 export default function HealthPage() {
@@ -50,6 +54,27 @@ export default function HealthPage() {
     carbs: acc.carbs + (log.carbs || 0),
     fat: acc.fat + (log.fat || 0),
   }), { calories: 0, protein: 0, carbs: 0, fat: 0 }) || { calories: 0, protein: 0, carbs: 0, fat: 0 };
+
+  const userSettings = useLiveQuery(() => db.settings.get('daily_calorie_goal'));
+  const goal = userSettings?.value || 2000;
+  
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
+  const [tempGoal, setTempGoal] = useState('');
+
+  const openGoalEditor = () => {
+    setTempGoal(goal.toString());
+    setIsEditingGoal(true);
+  };
+
+  const saveGoal = async () => {
+    const val = parseInt(tempGoal);
+    if (!isNaN(val) && val > 0) {
+      await db.settings.put({ id: 'daily_calorie_goal', value: val });
+      setIsEditingGoal(false);
+    }
+  };
+
+  const percentage = Math.min((totals.calories / goal) * 100, 100);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisReason, setAnalysisReason] = useState('');
@@ -173,7 +198,52 @@ export default function HealthPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 overflow-hidden relative">
+      {/* Decorative Background Icons */}
+      <div className="absolute inset-0 pointer-events-none opacity-5">
+        <Dumbbell className="absolute top-20 left-10 text-orange-500 animate-float-slow" size={48} />
+        <HeartPulse className="absolute top-40 right-10 text-red-500 animate-float-delayed" size={56} />
+        <Carrot className="absolute bottom-32 left-8 text-orange-600 animate-bounce-slow" size={40} />
+        <Droplets className="absolute bottom-48 right-12 text-blue-400 animate-pulse-slow" size={36} />
+        <Apple className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-green-500" size={120} />
+      </div>
+
+      {/* Goal Edit Modal */}
+      {isEditingGoal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-xl animate-scale-in">
+            <h3 className="text-xl font-bold text-gray-800 mb-2">设定每日目标</h3>
+            <p className="text-gray-500 text-sm mb-6">推荐成年人每日摄入 1800-2500 kcal</p>
+            
+            <div className="relative mb-6">
+              <input
+                type="number"
+                value={tempGoal}
+                onChange={(e) => setTempGoal(e.target.value)}
+                className="w-full text-center text-4xl font-black text-orange-500 bg-orange-50 rounded-2xl py-4 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                autoFocus
+              />
+              <span className="absolute right-4 bottom-5 text-gray-400 font-bold">kcal</span>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsEditingGoal(false)}
+                className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={saveGoal}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-400 to-red-500 text-white font-bold shadow-lg shadow-orange-200 hover:shadow-orange-300 transform active:scale-95 transition-all"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-white sticky top-0 z-40 shadow-sm">
         <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
@@ -194,10 +264,20 @@ export default function HealthPage() {
           
           <div className="relative z-10">
             <div className="text-center mb-6">
-              <span className="text-gray-400 text-sm uppercase tracking-wider font-semibold">总热量摄入</span>
-              <div className="text-5xl font-black text-gray-800 mt-2 flex items-baseline justify-center gap-1">
+              <span className="text-gray-400 text-sm uppercase tracking-wider font-semibold">总热量摄入 / 目标 {goal}</span>
+              <div 
+                onClick={openGoalEditor}
+                className="text-5xl font-black text-gray-800 mt-2 flex items-baseline justify-center gap-1 cursor-pointer hover:scale-105 transition-transform"
+                title="点击修改每日目标"
+              >
                 {totals.calories}
                 <span className="text-lg text-gray-400 font-medium">kcal</span>
+              </div>
+              <div className="w-full h-2 bg-gray-100 rounded-full mt-4 overflow-hidden max-w-[200px] mx-auto">
+                 <div 
+                   className="h-full bg-gradient-to-r from-orange-300 to-red-500 rounded-full transition-all duration-1000 ease-out"
+                   style={{ width: `${percentage}%` }}
+                 />
               </div>
             </div>
 

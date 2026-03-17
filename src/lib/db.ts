@@ -23,6 +23,11 @@ export interface CalorieLog {
   mealType?: string; // e.g., 'breakfast', 'lunch', 'dinner', 'snack'
 }
 
+export interface UserSettings {
+  id: string; // key like 'daily_calorie_goal'
+  value: any;
+}
+
 const db = new Dexie('FridgeDatabase') as Dexie & {
   ingredients: EntityTable<
     Ingredient,
@@ -30,6 +35,10 @@ const db = new Dexie('FridgeDatabase') as Dexie & {
   >;
   calorieLogs: EntityTable<
     CalorieLog,
+    'id'
+  >;
+  settings: EntityTable<
+    UserSettings,
     'id'
   >;
 };
@@ -56,7 +65,12 @@ db.version(3).stores({
 
 // Version 4: Add macros to calorieLogs
 db.version(4).stores({
-  calorieLogs: '++id, date, recipeName, mealType' // update index if needed, but usually just adding fields doesn't require schema change if not indexed
+  calorieLogs: '++id, date, recipeName, mealType' 
+});
+
+// Version 5: Add settings table
+db.version(5).stores({
+  settings: 'id'
 });
 
 export { db };
