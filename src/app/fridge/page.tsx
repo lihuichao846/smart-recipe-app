@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { estimateExpiryDate } from '@/lib/utils';
 import FloatingFood from '@/components/FloatingFood';
 import { identifyIngredients } from '@/lib/client-ai';
+import AIRobot from '@/components/AIRobot';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -1004,6 +1005,9 @@ export default function FridgeManager() {
             </motion.div>
           )}
         </div>
+        
+        {/* AI Robot Assistant */}
+        <AIRobot ingredients={ingredients || []} activeTab={activeTab} />
       </main>
     </div>
   </div>
